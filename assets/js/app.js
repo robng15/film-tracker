@@ -225,26 +225,34 @@ function initCoverArtInput() {
 
 /* ── View toggle (list / browse grid) ── */
 function initViewToggle() {
-    const btnList   = document.getElementById('viewList');
-    const btnGrid   = document.getElementById('viewGrid');
-    const listView  = document.getElementById('listView');
+    const btnList    = document.getElementById('viewList');
+    const btnGrid    = document.getElementById('viewGrid');
+    const listView   = document.getElementById('listView');
     const browseGrid = document.getElementById('browseGrid');
+    const viewInput  = document.getElementById('viewInput');
     if (!btnList || !btnGrid || !browseGrid) return;
 
-    const saved = localStorage.getItem('filmTrackerView') || 'list';
+    // Server-rendered view is the source of truth
+    const current = (viewInput ? viewInput.value : null) || 'list';
 
     function applyView(view) {
         const isBrowse = view === 'grid';
         browseGrid.style.display = isBrowse ? '' : 'none';
         if (listView) listView.style.display = isBrowse ? 'none' : '';
-        btnList.classList.toggle('active',  !isBrowse);
-        btnGrid.classList.toggle('active',   isBrowse);
-        localStorage.setItem('filmTrackerView', view);
+        btnList.classList.toggle('active', !isBrowse);
+        btnGrid.classList.toggle('active',  isBrowse);
     }
 
-    btnList.addEventListener('click', () => applyView('list'));
-    btnGrid.addEventListener('click', () => applyView('grid'));
-    applyView(saved);
+    function navigateTo(view) {
+        const url = new URL(window.location);
+        url.searchParams.set('view', view);
+        url.searchParams.set('page', '1');
+        window.location = url.toString();
+    }
+
+    btnList.addEventListener('click', () => navigateTo('list'));
+    btnGrid.addEventListener('click', () => navigateTo('grid'));
+    applyView(current);
 }
 
 /* ── Init ── */

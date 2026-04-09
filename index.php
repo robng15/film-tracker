@@ -13,8 +13,9 @@ $source  = $_GET['source'] ?? '';
 $genre   = $_GET['genre'] ?? '';
 $watcher = (int)($_GET['watcher'] ?? 0);
 $search  = trim($_GET['search'] ?? '');
+$view    = ($_GET['view'] ?? 'list') === 'grid' ? 'grid' : 'list';
 $page    = max(1, (int)($_GET['page'] ?? 1));
-$per     = 25;
+$per     = $view === 'grid' ? 50 : 25;
 
 $where  = ['1=1'];
 $params = [];
@@ -62,9 +63,9 @@ $wchrs = get_watchers();
 $page_title = APP_NAME;
 
 function sort_link(string $col, string $label): string {
-    global $sort, $dir;
+    global $sort, $dir, $view;
     $new_dir = ($sort === $col && $dir === 'DESC') ? 'asc' : 'desc';
-    $p = array_merge($_GET, ['sort' => $col, 'dir' => $new_dir, 'page' => 1]);
+    $p = array_merge($_GET, ['sort' => $col, 'dir' => $new_dir, 'page' => 1, 'view' => $view]);
     $icon = $sort === $col ? ($dir === 'ASC' ? ' <i class="bi bi-sort-up"></i>' : ' <i class="bi bi-sort-down"></i>') : ' <i class="bi bi-arrow-down-up opacity-50"></i>';
     return '<a href="?' . http_build_query($p) . '" class="text-white text-decoration-none">' . $label . $icon . '</a>';
 }
@@ -125,6 +126,7 @@ require_once __DIR__ . '/includes/header.php';
             </div>
             <input type="hidden" name="sort" value="<?= e($sort) ?>">
             <input type="hidden" name="dir" value="<?= strtolower($dir) ?>">
+            <input type="hidden" name="view" id="viewInput" value="<?= e($view) ?>">
         </form>
     </div>
 </div>
