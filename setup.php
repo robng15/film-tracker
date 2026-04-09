@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/helpers.php';
 
 $db_exists = file_exists(DB_PATH);
 $error = $success = '';
