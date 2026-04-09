@@ -225,22 +225,20 @@ function initCoverArtInput() {
 
 /* ── View toggle (list / browse grid) ── */
 function initViewToggle() {
-    const btnList  = document.getElementById('viewList');
-    const btnGrid  = document.getElementById('viewGrid');
-    const mobileCards   = document.querySelector('.d-md-none.vstack');
-    const desktopTable  = document.querySelector('.d-none.d-md-block');
-    const browseGrid    = document.getElementById('browseGrid');
+    const btnList   = document.getElementById('viewList');
+    const btnGrid   = document.getElementById('viewGrid');
+    const listView  = document.getElementById('listView');
+    const browseGrid = document.getElementById('browseGrid');
     if (!btnList || !btnGrid || !browseGrid) return;
 
     const saved = localStorage.getItem('filmTrackerView') || 'list';
 
     function applyView(view) {
         const isBrowse = view === 'grid';
-        browseGrid.style.display     = isBrowse ? '' : 'none';
-        if (mobileCards)  mobileCards.style.display  = isBrowse ? 'none' : '';
-        if (desktopTable) desktopTable.style.display  = isBrowse ? 'none' : '';
-        btnList.classList.toggle('active', !isBrowse);
-        btnGrid.classList.toggle('active',  isBrowse);
+        browseGrid.style.display = isBrowse ? '' : 'none';
+        if (listView) listView.style.display = isBrowse ? 'none' : '';
+        btnList.classList.toggle('active',  !isBrowse);
+        btnGrid.classList.toggle('active',   isBrowse);
         localStorage.setItem('filmTrackerView', view);
     }
 

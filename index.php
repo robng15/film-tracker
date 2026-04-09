@@ -142,6 +142,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </div>
 
+<div id="listView">
 <!-- Mobile cards -->
 <div class="d-md-none vstack gap-2">
 <?php foreach ($films as $f): ?>
@@ -265,6 +266,8 @@ require_once __DIR__ . '/includes/header.php';
 </table>
 </div>
 </div>
+
+</div><!-- /#listView -->
 
 <!-- Browse grid (hidden by default, toggled by JS) -->
 <div id="browseGrid" style="display:none">
