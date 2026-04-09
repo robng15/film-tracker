@@ -1,0 +1,17 @@
+# Config with API keys — copy config.example.php to config.php and fill in values
+includes/config.php
+
+# Database
+db/film-tracker.db
+db/*.db
+
+# Personal data
+data.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
