@@ -11,14 +11,42 @@ $rows  = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv'])) {
     $file = $_FILES['csv']['tmp_name'];
     if ($file && ($fh = fopen($file, 'r')) !== false) {
-        $headers = array_map('trim', fgetcsv($fh));
-        // Normalise header names
+        $raw_headers = fgetcsv($fh);
+        if (!$raw_headers) { $error = 'Could not read CSV headers.'; fclose($fh); goto done; }
+
+        // Strip BOM from first header if present
+        $raw_headers[0] = ltrim($raw_headers[0], "\xEF\xBB\xBF\xFF\xFE");
+
+        $headers = array_map('trim', $raw_headers);
+
+        // Normalise: lowercase, strip spaces/brackets, also keep original for fallback
         $map = [];
         foreach ($headers as $i => $h) {
-            $map[strtolower(str_replace([' ', '(', ')'], ['_', '', ''], $h))] = $i;
+            $key = strtolower(preg_replace('/[^a-z0-9]+/i', '_', $h));
+            $map[$key] = $i;
         }
+
+        // Aliases for common header variations
+        $aliases = [
+            'title'        => ['title', 'film_title', 'film', 'name', 'movie', 'movie_title'],
+            'date_watched' => ['date_watched', 'date', 'watched', 'watch_date', 'viewed'],
+            'year'         => ['year', 'release_year', 'yr'],
+            'first_watch'  => ['first_watch', 'first', 'new'],
+            'source'       => ['source', 'platform', 'service', 'where'],
+            'finished'     => ['finished', 'complete', 'completed', 'watched'],
+            'watchers'     => ['watchers', 'who', 'viewer', 'viewers', 'watched_by'],
+        ];
+        $resolved = [];
+        foreach ($aliases as $field => $candidates) {
+            foreach ($candidates as $c) {
+                if (isset($map[$c])) { $resolved[$field] = $map[$c]; break; }
+            }
+        }
+
+        $detected_headers = $headers; // for debug display
+
         while (($row = fgetcsv($fh)) !== false) {
-            $get = fn(string $k, string $default = '') => trim($row[$map[$k] ?? -1] ?? $default);
+            $get = fn(string $k, string $default = '') => isset($resolved[$k]) ? trim($row[$resolved[$k]] ?? $default) : $default;
             $date_raw = $get('date_watched');
             // Convert DD/MM/YYYY to YYYY-MM-DD
             $date_watched = null;
@@ -42,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv'])) {
     } else {
         $error = 'Could not read uploaded file.';
     }
+    done:
 }
 
 $watchers     = get_watchers();
@@ -80,6 +109,20 @@ require_once __DIR__ . '/includes/header.php';
     <i class="bi bi-info-circle me-1"></i>
     Found <strong><?= count($rows) ?></strong> rows. Click <strong>Start Import</strong> to match each film against IMDB and import. This may take a few minutes.
 </div>
+
+<?php
+$missing = array_filter(['title','date_watched','year','source','finished','watchers'], fn($f) => !isset($resolved[$f]));
+if ($missing): ?>
+<div class="alert alert-warning">
+    <strong><i class="bi bi-exclamation-triangle me-1"></i>Column mapping issue</strong> — could not find columns for: <code><?= e(implode(', ', $missing)) ?></code><br>
+    <small>Detected headers: <code><?= e(implode(' | ', $detected_headers)) ?></code></small>
+</div>
+<?php endif; ?>
+<?php if (isset($resolved['title'])): ?>
+<div class="alert alert-success py-1 small">
+    <i class="bi bi-check-circle me-1"></i>Title mapped to column <strong><?= e($detected_headers[$resolved['title']]) ?></strong> (index <?= $resolved['title'] ?>)
+</div>
+<?php endif; ?>
 
 <div class="d-flex gap-2 mb-3 flex-wrap">
     <button id="startImport" class="btn btn-warning fw-bold"><i class="bi bi-cloud-download me-1"></i>Start Import</button>
