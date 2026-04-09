@@ -1,9 +1,20 @@
 <div class="row g-3">
 
-    <!-- Cover art preview -->
-    <div class="col-12 text-center" id="coverPreviewWrap" style="<?= empty($film['cover_art_url']) ? 'display:none' : '' ?>">
-        <img id="coverPreview" src="<?= e($film['cover_art_url'] ?? '') ?>" style="width:100px;border-radius:6px" alt="Cover">
-        <input type="hidden" name="cover_art_url" id="f_cover_art_url" value="<?= e($film['cover_art_url'] ?? '') ?>">
+    <!-- Cover art -->
+    <div class="col-12">
+        <label class="form-label fw-semibold">Cover Art</label>
+        <div class="d-flex gap-3 align-items-start">
+            <div id="coverPreviewWrap" style="flex-shrink:0;<?= empty($film['cover_art_url']) ? 'display:none' : '' ?>">
+                <img id="coverPreview" src="<?= e($film['cover_art_url'] ?? '') ?>"
+                     style="width:80px;border-radius:6px;object-fit:cover" alt="Cover">
+            </div>
+            <div class="flex-grow-1">
+                <input type="text" name="cover_art_url" id="f_cover_art_url" class="form-control form-control-sm"
+                       placeholder="Auto-filled from IMDB, or paste a custom image URL…"
+                       value="<?= e($film['cover_art_url'] ?? '') ?>">
+                <div class="form-text">Paste any direct image URL to override the IMDB artwork.</div>
+            </div>
+        </div>
     </div>
 
     <!-- Title -->

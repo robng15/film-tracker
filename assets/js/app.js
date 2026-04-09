@@ -80,9 +80,7 @@ function populateForm(d) {
     // Cover art
     if (d.cover_art_url) {
         setVal('f_cover_art_url', d.cover_art_url);
-        const img = document.getElementById('coverPreview');
-        const wrap = document.getElementById('coverPreviewWrap');
-        if (img) { img.src = d.cover_art_url; wrap.style.display = ''; }
+        updateCoverPreview(d.cover_art_url);
     }
 }
 
@@ -204,9 +202,58 @@ function escHtml(str) {
     return d.innerHTML;
 }
 
+/* ── Cover art preview (manual URL entry) ── */
+function updateCoverPreview(url) {
+    const img  = document.getElementById('coverPreview');
+    const wrap = document.getElementById('coverPreviewWrap');
+    if (!img || !wrap) return;
+    if (url) {
+        img.src = url;
+        wrap.style.display = '';
+    } else {
+        wrap.style.display = 'none';
+    }
+}
+
+function initCoverArtInput() {
+    const input = document.getElementById('f_cover_art_url');
+    if (!input) return;
+    input.addEventListener('input', () => updateCoverPreview(input.value.trim()));
+    // Show preview on load if value present
+    if (input.value.trim()) updateCoverPreview(input.value.trim());
+}
+
+/* ── View toggle (list / browse grid) ── */
+function initViewToggle() {
+    const btnList  = document.getElementById('viewList');
+    const btnGrid  = document.getElementById('viewGrid');
+    const mobileCards   = document.querySelector('.d-md-none.vstack');
+    const desktopTable  = document.querySelector('.d-none.d-md-block');
+    const browseGrid    = document.getElementById('browseGrid');
+    if (!btnList || !btnGrid || !browseGrid) return;
+
+    const saved = localStorage.getItem('filmTrackerView') || 'list';
+
+    function applyView(view) {
+        const isBrowse = view === 'grid';
+        browseGrid.style.display     = isBrowse ? '' : 'none';
+        if (mobileCards)  mobileCards.style.display  = isBrowse ? 'none' : '';
+        if (desktopTable) desktopTable.style.display  = isBrowse ? 'none' : '';
+        btnList.classList.toggle('active', !isBrowse);
+        btnGrid.classList.toggle('active',  isBrowse);
+        localStorage.setItem('filmTrackerView', view);
+    }
+
+    btnList.addEventListener('click', () => applyView('list'));
+    btnGrid.addEventListener('click', () => applyView('grid'));
+    applyView(saved);
+}
+
 /* ── Init ── */
 document.addEventListener('DOMContentLoaded', () => {
     initImdbSearch();
     initRatingSlider();
+    initCoverArtInput();
     initImport();
+    initViewToggle();
 });

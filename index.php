@@ -23,7 +23,7 @@ if ($year_r)  { $where[] = 'f.year = ?';       $params[] = $year_r; }
 if ($source)  { $where[] = 'f.source = ?';     $params[] = $source; }
 if ($genre)   { $where[] = 'EXISTS (SELECT 1 FROM film_genres fg JOIN genres g ON g.id=fg.genre_id WHERE fg.film_id=f.id AND g.name=?)'; $params[] = $genre; }
 if ($watcher) { $where[] = 'EXISTS (SELECT 1 FROM film_watchers fw WHERE fw.film_id=f.id AND fw.watcher_id=?)'; $params[] = $watcher; }
-if ($search)  { $where[] = '(f.director LIKE ? OR EXISTS (SELECT 1 FROM film_cast fc WHERE fc.film_id=f.id AND fc.name LIKE ?))'; $params[] = "%$search%"; $params[] = "%$search%"; }
+if ($search)  { $where[] = '(f.title LIKE ? OR f.director LIKE ? OR EXISTS (SELECT 1 FROM film_cast fc WHERE fc.film_id=f.id AND fc.name LIKE ?))'; $params[] = "%$search%"; $params[] = "%$search%"; $params[] = "%$search%"; }
 
 $w_sql = implode(' AND ', $where);
 $db    = db();
@@ -113,8 +113,8 @@ require_once __DIR__ . '/includes/header.php';
                     <?php foreach ($wchrs as $w): ?><option value="<?= $w['id'] ?>"<?= $watcher == $w['id'] ? ' selected' : '' ?>><?= e($w['name']) ?></option><?php endforeach; ?>
                 </select>
             </div>
-            <div class="col-6 col-md-2">
-                <label class="form-label small mb-1">Director / Cast</label>
+            <div class="col-12 col-md-2">
+                <label class="form-label small mb-1">Search Title / Director / Cast</label>
                 <div class="input-group input-group-sm">
                     <input type="text" name="search" class="form-control" placeholder="Search…" value="<?= e($search) ?>">
                     <button class="btn btn-dark" type="submit"><i class="bi bi-search"></i></button>
@@ -131,9 +131,15 @@ require_once __DIR__ . '/includes/header.php';
 
 <div class="d-flex justify-content-between align-items-center mb-2 px-1">
     <small class="text-muted"><?= number_format($total) ?> film<?= $total !== 1 ? 's' : '' ?></small>
-    <a href="<?= BASE_URL ?>add.php" class="btn btn-sm btn-warning fw-semibold d-none d-md-inline-flex">
-        <i class="bi bi-plus-lg me-1"></i>Add Film
-    </a>
+    <div class="d-flex align-items-center gap-2">
+        <div class="btn-group btn-group-sm" role="group" aria-label="View">
+            <button type="button" id="viewList" class="btn btn-outline-secondary" title="List view"><i class="bi bi-list-ul"></i></button>
+            <button type="button" id="viewGrid" class="btn btn-outline-secondary" title="Browse view"><i class="bi bi-grid-3x3-gap-fill"></i></button>
+        </div>
+        <a href="<?= BASE_URL ?>add.php" class="btn btn-sm btn-warning fw-semibold d-none d-md-inline-flex">
+            <i class="bi bi-plus-lg me-1"></i>Add Film
+        </a>
+    </div>
 </div>
 
 <!-- Mobile cards -->
@@ -258,6 +264,57 @@ require_once __DIR__ . '/includes/header.php';
     </tbody>
 </table>
 </div>
+</div>
+
+<!-- Browse grid (hidden by default, toggled by JS) -->
+<div id="browseGrid" style="display:none">
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-2">
+    <?php foreach ($films as $f): ?>
+    <div class="col">
+        <div class="card browse-card h-100 border-0 shadow-sm">
+            <a href="film.php?id=<?= $f['id'] ?>" class="position-relative d-block">
+                <?php if ($f['cover_art_url']): ?>
+                    <img src="<?= e($f['cover_art_url']) ?>" class="card-img-top browse-poster" alt="">
+                <?php else: ?>
+                    <div class="browse-poster poster-ph d-flex align-items-center justify-content-center">
+                        <i class="bi bi-film text-white" style="font-size:2.5rem"></i>
+                    </div>
+                <?php endif; ?>
+                <!-- Overlay badges -->
+                <div class="position-absolute top-0 start-0 p-1 d-flex flex-column gap-1">
+                    <?php if ($f['first_watch']): ?><span class="badge bg-success bg-opacity-90" title="First watch"><i class="bi bi-eye-fill"></i></span><?php endif; ?>
+                    <?php if (!$f['finished']): ?><span class="badge bg-warning bg-opacity-90 text-dark" title="Not finished"><i class="bi bi-hourglass-split"></i></span><?php endif; ?>
+                </div>
+                <?php if ($f['rating'] !== null): ?>
+                <div class="position-absolute bottom-0 end-0 p-1">
+                    <span class="badge bg-dark bg-opacity-80 fw-bold"><?= number_format((float)$f['rating'], 1) ?></span>
+                </div>
+                <?php endif; ?>
+                <?php if ($f['source']): ?>
+                <div class="position-absolute bottom-0 start-0 p-1">
+                    <?= source_badge($f['source']) ?>
+                </div>
+                <?php endif; ?>
+            </a>
+            <div class="card-body p-2">
+                <?php if ($f['imdb_id']): ?>
+                    <a href="https://www.imdb.com/title/<?= e($f['imdb_id']) ?>/" target="_blank"
+                       class="fw-semibold small d-block text-truncate text-dark text-decoration-none title-hover"><?= e($f['title']) ?></a>
+                <?php else: ?>
+                    <span class="fw-semibold small d-block text-truncate"><?= e($f['title']) ?></span>
+                <?php endif; ?>
+                <div class="text-muted" style="font-size:.72rem"><?= $f['year'] ?: '—' ?><?= $f['imdb_rating'] ? ' · ★ ' . number_format((float)$f['imdb_rating'],1) : '' ?></div>
+            </div>
+            <div class="card-footer p-1 bg-transparent border-0 d-flex justify-content-end gap-1">
+                <a href="edit.php?id=<?= $f['id'] ?>" class="btn btn-xs btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>
+            </div>
+        </div>
+    </div>
+    <?php endforeach; ?>
+    <?php if (empty($films)): ?>
+        <div class="col-12 text-center text-muted py-5"><i class="bi bi-film fs-1 d-block mb-2"></i>No films found.</div>
+    <?php endif; ?>
+    </div>
 </div>
 
 <!-- Pagination -->

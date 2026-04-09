@@ -62,6 +62,17 @@ input[type=range] { accent-color: #ffc107; }
     .poster-xs { width: 36px; height: 52px; }
 }
 
+/* ── Browse grid ── */
+.browse-card { transition: transform .15s, box-shadow .15s; }
+.browse-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.15) !important; }
+.browse-poster {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    display: block;
+    background: #343a40;
+}
+
 /* ── Sticky filter card ── */
 @media (min-width: 768px) {
     .sticky-filters { position: sticky; top: 60px; z-index: 10; }
