@@ -81,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="mb-3">
                 <label class="form-label fw-semibold">Username</label>
                 <input type="text" name="username" class="form-control form-control-lg" required
-                       value="<?= e($_POST['username'] ?? 'admin') ?>" autofocus>
+                       autocomplete="off" value="<?= e($_POST['username'] ?? '') ?>" autofocus>
             </div>
             <div class="mb-3">
                 <label class="form-label fw-semibold">Password</label>
