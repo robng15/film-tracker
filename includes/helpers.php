@@ -118,6 +118,7 @@ function source_badge(string $source): string {
         'Cinema'      => 'success',
         'Paramount+'  => 'primary',
         'DVD/Blu-ray' => 'secondary',
+        'Android Box' => 'dark',
     ];
     $cls = $map[$source] ?? 'light text-dark border';
     return '<span class="badge bg-' . $cls . '">' . e($source) . '</span>';

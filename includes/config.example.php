@@ -15,4 +15,4 @@ $_root = str_replace('\\', '/', rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/'));
 define('BASE_URL', ($_root && str_starts_with($_app, $_root) ? str_replace($_root, '', $_app) : '') . '/');
 unset($_app, $_root);
 
-define('SOURCES', ['Netflix', 'Firestick', 'Amazon Prime', 'Cinema', 'Paramount+', 'DVD/Blu-ray', 'Other']);
+define('SOURCES', ['Netflix', 'Firestick', 'Amazon Prime', 'Cinema', 'Paramount+', 'DVD/Blu-ray', 'Android Box', 'Other']);
